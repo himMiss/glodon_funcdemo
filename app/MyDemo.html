@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>funcDemo</title>
+    <script type="text/javascript" src="../libs/three.js"></script>
+    <script type="text/javascript" src="../libs/controls/TransformControls.js"></script>
+    <script type="text/javascript" src="../libs/controls/OrbitControls.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div id="WebGL-output">
+    </div>
+
+    <script type="text/javascript">
+        function init() {
+
+            let scene = new THREE.Scene();
+
+            let camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+            let renderer = new THREE.WebGLRenderer({
+                antialias: true,
+                preserveDrawingBuffer: true
+            });
+            renderer.setClearColor(new THREE.Color(0xfafafa, 1.0));
+            renderer.setPixelRatio( window.devicePixelRatio );//设置设备像素比。通常用于HiDPI设备防止模糊输出canvas
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            //创建基面
+            let size = 100, step = 1, step2 = 10, step3 = 100;
+            let geometry1 = new THREE.Geometry();
+            for (let i = -size; i <= size; i += step) {
+                geometry1.vertices.push(new THREE.Vector3(-size, 0, i));
+                geometry1.vertices.push(new THREE.Vector3(size, 0, i));
+                geometry1.vertices.push(new THREE.Vector3(i, 0, -size));
+                geometry1.vertices.push(new THREE.Vector3(i, 0, size));
+            }
+            let material = new THREE.LineBasicMaterial({color: 0x87CEFA, opacity: 0.6, transparent: true});
+            let line = new THREE.LineSegments(geometry1, material);
+            scene.add(line);
+
+            let geometry2 = new THREE.Geometry();
+            for (let i = -size; i <= size; i += step2) {
+                geometry2.vertices.push(new THREE.Vector3(-size, 0, i));
+                geometry2.vertices.push(new THREE.Vector3(size, 0, i));
+                geometry2.vertices.push(new THREE.Vector3(i, 0, -size));
+                geometry2.vertices.push(new THREE.Vector3(i, 0, size));
+            }
+            let material2 = new THREE.LineBasicMaterial({color: 0x4682B4, opacity: 0.6, transparent: true});
+            let line2 = new THREE.LineSegments(geometry2, material2);
+            scene.add(line2);
+
+            let geometry3 = new THREE.Geometry();
+            for (let i = -size; i <= size; i += step3) {
+                geometry3.vertices.push(new THREE.Vector3(-size, 0, i));
+                geometry3.vertices.push(new THREE.Vector3(size, 0, i));
+                geometry3.vertices.push(new THREE.Vector3(i, 0, -size));
+                geometry3.vertices.push(new THREE.Vector3(i, 0, size));
+            }
+            let material3 = new THREE.LineBasicMaterial({color: 0x4682B4, opacity: 0.6, transparent: true});
+            let line3 = new THREE.LineSegments(geometry3, material3);
+            scene.add(line3);
+
+            // 设置相机位置，并且定义方向
+            camera.position.x = 0;
+            camera.position.y = 180;
+            camera.position.z = 180;
+            camera.lookAt(scene.position);
+
+            // 视图控制
+            let controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.zoomSpeed = 2;
+            controls.addEventListener('change', ()=>{renderer.render(scene, camera)});
+
+
+
+            //初始化模型控制器
+            let control = new THREE.TransformControls(camera, renderer.domElement);
+            control.able = "false";
+            control.addEventListener('change', ()=>{renderer.render(scene, camera)});
+            window.addEventListener('keydown', function (event) {
+
+                switch (event.keyCode) {
+
+                    case 81: // Q
+                        control.setSpace(control.space === "local" ? "world" : "local");
+                        break;
+
+                    case 17: // Ctrl
+                        control.setTranslationSnap(5);
+                        control.setRotationSnap(THREE.Math.degToRad(15));
+                        break;
+
+                    case 87: // W
+                        control.setMode("translate");
+                        break;
+
+                    case 69: // E
+                        control.setMode("rotate");
+                        break;
+
+                    case 82: // R
+                        control.setMode("scale");
+                        break;
+
+                    case 187:
+                    case 107: // +, =, num+
+                        control.setSize(control.size + 0.1);
+                        break;
+
+                    case 189:
+                    case 109:
+                        control.setSize(Math.max(control.size - 0.1, 0.1));
+                        break;
+                    case 46: //delete键按下
+                        // IE
+                        if (document.all) {
+                            document.getElementById("deleted").click();
+                        }
+                        // 其它浏览器
+                        else {
+                            var e = document.createEvent("MouseEvents");
+                            e.initEvent("click", true, true);
+                            document.getElementById("deleted").dispatchEvent(e);
+                        }
+                        break;
+
+                }
+            });
+            //控制器并隐藏
+            scene.add(control);
+            control.object = undefined;
+            control.visible = false;
+
+
+
+
+
+            console.log(scene);
+            document.getElementById("WebGL-output").appendChild(renderer.domElement);
+            renderer.render(scene, camera);
+            // onresize 事件会在窗口被调整大小时发生
+            window.onresize = function(){
+                // 重置渲染器输出画布canvas尺寸
+                renderer.setSize(window.innerWidth,window.innerHeight);
+                // 全屏情况下：设置观察范围长宽比aspect为窗口宽高比
+                camera.aspect = window.innerWidth/window.innerHeight;
+                // 渲染器执行render方法的时候会读取相机对象的投影矩阵属性projectionMatrix
+                // 但是不会每渲染一帧，就通过相机的属性计算投影矩阵(节约计算资源)
+                // 如果相机的一些属性发生了变化，需要执行updateProjectionMatrix ()方法更新相机的投影矩阵
+                camera.updateProjectionMatrix ();
+            };
+
+
+            animate();
+            function animate() {
+
+                requestAnimationFrame(animate);
+                renderer.render(scene, camera);
+                controls.update();
+                // transformControl.update();
+            }
+        }
+        window.onload = init;
+
+    </script>
+
+</body>
+</html>
