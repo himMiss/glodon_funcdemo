@@ -137,9 +137,28 @@
             control.object = undefined;
             control.visible = false;
 
+            //8.15:添加box
+            let boxGeometry = new THREE.BoxGeometry(20,20,20);
+            let boxMaterial = new THREE.MeshLambertMaterial({
+                color:0x0000ff
+            });
 
+            let mesh = new THREE.Mesh(boxGeometry,boxMaterial);
+            mesh.position.set(0,10,0);
+            scene.add(mesh);
 
+            /**
+             * 0816
+             * 方向光 --- lamber材质
+             * */
+            let lightPoint = new THREE.PointLight(0xffffff);
+            lightPoint.position.set(400,200,300);
+            scene.add(lightPoint);
+            //环境光
+            let ambient = new THREE.AmbientLight(0x444444);
+            scene.add(ambient);
 
+            //8.15
 
             console.log(scene);
             document.getElementById("WebGL-output").appendChild(renderer.domElement);
@@ -157,7 +176,7 @@
             };
 
 
-            animate();
+
             function animate() {
 
                 requestAnimationFrame(animate);
@@ -165,6 +184,7 @@
                 controls.update();
                 // transformControl.update();
             }
+            animate();
         }
         window.onload = init;
 
